@@ -1,0 +1,129 @@
+/* GENEL AYARLAR */
+body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #222;
+    margin: 0;
+    font-family: 'Courier New', Courier, monospace;
+    overflow: hidden; 
+}
+
+/* BİLGİ PANELİ */
+#bilgi-paneli {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 15px; /* Kutular arası boşluk */
+}
+
+.kutu {
+    background-color: #333;
+    padding: 10px 15px;
+    border: 2px solid #555;
+    border-radius: 8px;
+    color: #fff;
+    font-weight: bold;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    min-width: 70px;
+}
+
+.etiket {
+    font-size: 12px;
+    color: #aaa;
+    margin-bottom: 5px;
+}
+
+#sure-gostergesi, #ceza-gostergesi, #toplam-puan-gostergesi, #level-gostergesi {
+    font-size: 24px;
+}
+
+#sure-gostergesi { color: #00ff00; }
+
+.kritik {
+    color: #ff0000 !important;
+    animation: titret 0.2s infinite;
+}
+
+@keyframes titret {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-2px); }
+    50% { transform: translateX(2px); }
+    100% { transform: translateX(0); }
+}
+
+/* OYUN ALANI */
+#oyun-kutusu {
+    display: grid;
+    background-color: #006400; 
+    border: 5px solid #000;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+}
+
+/* HÜCRELER */
+.hucre {
+    width: 18px; 
+    height: 18px;
+    background-color: #fff; 
+    border: 1px solid #fff; 
+    position: relative; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* DUVARLAR */
+.duvar {
+    background: linear-gradient(135deg, #008000, #003300); 
+    box-shadow: inset 2px 2px 5px rgba(255,255,255,0.2), 
+                inset -2px -2px 5px rgba(0,0,0,0.5);
+    border: none; 
+}
+
+/* İZ (PEMBE NOKTA) */
+.iz {
+    width: 6px;
+    height: 6px;
+    background-color: #ff1493; 
+    border-radius: 50%;
+    box-shadow: 0 0 4px #ff1493; 
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1; 
+}
+
+/* BAŞLANGIÇ & BİTİŞ */
+.baslangic {
+    background-color: #E30A17 !important; 
+    border-color: #E30A17 !important;
+}
+
+.bitis {
+    background-color: #40E0D0 !important;
+    border-color: #40E0D0 !important;
+    box-shadow: 0 0 10px #40E0D0;
+    animation: parla 1s infinite alternate;
+}
+
+@keyframes parla {
+    from { opacity: 0.6; }
+    to { opacity: 1; }
+}
+
+/* OYUNCU (PEMBE ÜÇGEN) */
+.ucgen-karakter {
+    width: 14px; 
+    height: 14px;
+    background-color: #ff1493; 
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    transition: transform 0.1s linear;
+    position: relative; 
+    z-index: 10; 
+    box-shadow: 0 0 5px #000;
+}
