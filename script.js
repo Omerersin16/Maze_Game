@@ -272,5 +272,32 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowLeft' || e.key === 'a')  hareketEt(0, -1, -90); 
 });
 
+// --- MOBİL KONTROLLER ---
+
+// HTML'deki butonları seç
+const btnY = document.getElementById('btn-yukari');
+const btnA = document.getElementById('btn-asagi');
+const btnSol = document.getElementById('btn-sol');
+const btnSag = document.getElementById('btn-sag');
+
+// Dokunma (Touch) ve Tıklama (Click) Olaylarını Ekle
+// preventDefault() kullanıyoruz ki butona basınca ekran yakınlaşmasın/kaymasın.
+
+function butonBagla(btn, dy, dx, aci) {
+    const islem = (e) => {
+        if(e.cancelable) e.preventDefault(); // Ekran kaymasını önle
+        hareketEt(dy, dx, aci);
+    };
+    
+    btn.addEventListener('touchstart', islem, {passive: false});
+    btn.addEventListener('mousedown', islem); // PC'de mouse ile test için
+}
+
+// Yönleri Tanımla (Aynı klavye mantığı)
+butonBagla(btnY, -1, 0, 0);    // Yukarı
+butonBagla(btnA, 1, 0, 180);   // Aşağı
+butonBagla(btnSag, 0, 1, 90);  // Sağ
+butonBagla(btnSol, 0, -1, -90); // Sol
+
 // Başlat
 haritaUret();
