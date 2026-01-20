@@ -294,10 +294,113 @@ function butonBagla(btn, dy, dx, aci) {
 }
 
 // Yönleri Tanımla (Aynı klavye mantığı)
-butonBagla(btnY, -1, 0, 0);    // Yukarı
-butonBagla(btnA, 1, 0, 180);   // Aşağı
-butonBagla(btnSag, 0, 1, 90);  // Sağ
+butonBagla(btnY, -1, 0, 0);     // Yukarı
+butonBagla(btnA, 1, 0, 180);    // Aşağı
+butonBagla(btnSag, 0, 1, 90);   // Sağ
 butonBagla(btnSol, 0, -1, -90); // Sol
+
+// =========================================================
+// SWIPE KONTROL
+// - Kısa kaydır bırak  -> 1 kare git
+// - Basılı tut         -> bırakana kadar sürekli git
+// =========================================================
+function swipeKontrolleriniBagla() {
+
+    let basX = 0;
+    let basY = 0;
+
+    let yon = null;           
+    let intervalId = null;
+    let yonBelirlendiMi = false;
+
+    const ESİK = 25;          // yön algılama eşiği (px)
+    const ADIM_MS = 110;     // sürekli yürüyüş hızı
+
+    function adimAt() {
+        if (!yon) return;
+
+        if (yon === "L") hareketEt(0, -1, -90);
+        if (yon === "R") hareketEt(0,  1,  90);
+        if (yon === "U") hareketEt(-1, 0,   0);
+        if (yon === "D") hareketEt( 1, 0, 180);
+    }
+
+    function intervalBaslat() {
+        if (intervalId) return;
+
+        intervalId = setInterval(() => {
+            adimAt();
+        }, ADIM_MS);
+    }
+
+    function intervalDurdur() {
+        if (intervalId) {
+            clearInterval(intervalId);
+            intervalId = null;
+        }
+    }
+
+    // Parmağı bastık
+    oyunKutusu.addEventListener('touchstart', (e) => {
+        if (e.cancelable) e.preventDefault();
+
+        const t = e.touches[0];
+        basX = t.clientX;
+        basY = t.clientY;
+
+        yon = null;
+        yonBelirlendiMi = false;
+        intervalDurdur();
+    }, { passive: false });
+
+    // Parmağı sürüklerken
+    oyunKutusu.addEventListener('touchmove', (e) => {
+        if (e.cancelable) e.preventDefault();
+
+        const t = e.touches[0];
+        const dx = t.clientX - basX;
+        const dy = t.clientY - basY;
+
+        // Henüz yön seçilmediyse
+        if (!yonBelirlendiMi) {
+
+            if (Math.abs(dx) < ESİK && Math.abs(dy) < ESİK) return;
+
+            // Yön belirle
+            if (Math.abs(dx) > Math.abs(dy)) {
+                yon = (dx > 0) ? "R" : "L";
+            } else {
+                yon = (dy > 0) ? "D" : "U";
+            }
+
+            yonBelirlendiMi = true;
+
+            // 🔹 İLK ADIM (kısa kaydır için)
+            adimAt();
+
+            // 🔹 Parmağı basılı tutuyorsa artık sürekli gitsin
+            intervalBaslat();
+        }
+    }, { passive: false });
+
+    // Parmağı kaldırınca dur
+    oyunKutusu.addEventListener('touchend', (e) => {
+        yon = null;
+        yonBelirlendiMi = false;
+        intervalDurdur();
+    }, { passive: false });
+
+    oyunKutusu.addEventListener('touchcancel', (e) => {
+        yon = null;
+        yonBelirlendiMi = false;
+        intervalDurdur();
+    }, { passive: false });
+}
+
+// Swipe'ı aktif et
+swipeKontrolleriniBagla();
+
+
 
 // Başlat
 haritaUret();
