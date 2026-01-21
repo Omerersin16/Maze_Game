@@ -216,25 +216,36 @@ body {
 }
 
 /* =========================================================
-   MOBİL: EKRANA SIĞDIRMA (SCALE)
+   MOBİL UYUMLU GERÇEK ÇÖZÜM (KESİLME YOK, ORAN KORUNUR)
    ========================================================= */
+
 @media (max-width: 600px) {
 
-    /* Mobilde üstten hizalama */
-    body {
-        align-items: flex-start;
-    }
+  body {
+    justify-content: flex-start;
+    padding-top: 10px;
+  }
 
-    #oyun-kutusu {
-        transform: scale(0.84);
-        transform-origin: top left;
-        margin-left: 0;
-        margin-right: 0;
+  /* ÜST KUTULAR MOBİLDE DÜZGÜN SARILSIN */
+  #bilgi-paneli {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
 
-        /* KUTUNUN GERÇEK BOYUTU: scale ile AYNI olmalı
-           (Bu değerler, senin labirentin toplam piksel boyutuna göre sabit.)
-        */
-        width:  calc(558px * 0.84);
-        height: calc(558px * 0.84);
-    }
+  .kutu {
+    min-width: 40%;
+    max-width: 45%;
+    padding: 8px 10px;
+  }
+
+  /* LABİRENT DIŞ KABI */
+  #oyun-kutusu {
+    width: 100%;
+    max-width: 95vw;     /* EKRANA SIĞAR */
+    aspect-ratio: 1 / 1; /* KARE KORUNUR */
+    margin: 10px auto;
+  }
+
 }
