@@ -1,21 +1,35 @@
 /* =========================================================
    GENEL AYARLAR
    ========================================================= */
+
+/* Varsayılan hücre boyutu (JS mobilde dinamik ayarlayacak) */
+:root{
+    --cell-size: 18px;   /* Desktop default */
+    --cols: 31;
+    --rows: 31;
+}
+
 body {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+
+    /* Mobil tarayıcı adres çubuğu vb. yüzünden "100vh" bazen şaşar */
+    min-height: 100vh;
+    min-height: 100svh;
+
     background-color: #222;
     margin: 0;
     font-family: 'Courier New', Courier, monospace;
 
-    /* 🔴 EKRAN KENAR GÜVENLİĞİ (sağdan soldan kesilme olmasın) */
-    padding: 6px;
-    box-sizing: border-box;
+    /* Sayfa sağa-sola taşmasın */
+    overflow-x: hidden;
 
-    overflow: hidden;
+    /* iPhone çentik/safe-area için ufak güvenlik */
+    padding-top: env(safe-area-inset-top);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
 }
 
 /* =========================================================
@@ -25,14 +39,8 @@ body {
     margin-bottom: 20px;
     display: flex;
     gap: 15px; /* Kutular arası boşluk */
-
-    /* 🔴 MOBİL/GENEL: Panel taşmasın */
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
-
+    flex-wrap: wrap; /* Mobilde taşarsa alt satıra iner */
     justify-content: center;
-    flex-wrap: wrap;
 }
 
 .kutu {
@@ -46,12 +54,7 @@ body {
     flex-direction: column;
     align-items: center;
     box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-
     min-width: 70px;
-
-    /* 🔴 Taşma olmasın */
-    max-width: 100%;
-    box-sizing: border-box;
 }
 
 .etiket {
@@ -90,12 +93,11 @@ body {
     border: 5px solid #000;
     box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
 
-    /* 🔴 TAŞMAYI ENGELLE (sağdan kesilme olmasın) */
-    max-width: 100%;
-    box-sizing: border-box;
-    overflow: hidden;
+    /* Grid "gerçek boyutu" (JS --cell-size / --cols / --rows ayarlıyor) */
+    width:  calc(var(--cell-size) * var(--cols));
+    height: calc(var(--cell-size) * var(--rows));
 
-    /* MOBİL: Labirent üstünde parmak kaydırınca sayfa kaymasın */
+    /* Dokunmatik kaydırmada sayfa scroll/zoom yapmasın */
     touch-action: none;
 }
 
@@ -103,10 +105,15 @@ body {
    HÜCRELER
    ========================================================= */
 .hucre {
-    width: 18px;
-    height: 18px;
+    width: var(--cell-size);
+    height: var(--cell-size);
+
     background-color: #fff;
     border: 1px solid #fff;
+
+    /* Border yüzünden toplam boyut büyüyüp taşmasın */
+    box-sizing: border-box;
+
     position: relative;
     display: flex;
     justify-content: center;
@@ -206,7 +213,10 @@ body {
     color: white;
     font-size: 24px;
     cursor: pointer;
-    touch-action: manipulation; /* Dokunmatik gecikmesini önler */
+
+    /* Mobilde tıklama gecikmesi ve double-tap zoomu azaltır */
+    touch-action: manipulation;
+
     transition: background-color 0.1s;
 }
 
@@ -216,36 +226,33 @@ body {
 }
 
 /* =========================================================
-   MOBİL UYUMLU GERÇEK ÇÖZÜM (KESİLME YOK, ORAN KORUNUR)
+   MOBİL: Panel + yazılar biraz küçülsün, daha rahat sığsın
    ========================================================= */
+@media (max-width: 600px){
+    body{
+        justify-content: flex-start; /* Üstten başlasın */
+        padding-top: 12px;
+    }
 
-@media (max-width: 600px) {
+    #bilgi-paneli{
+        margin-bottom: 12px;
+        gap: 10px;
+        padding: 0 8px;
+    }
 
-  body {
-    justify-content: flex-start;
-    padding-top: 10px;
-  }
+    .kutu{
+        padding: 8px 10px;
+        min-width: 64px;
+    }
 
-  /* ÜST KUTULAR MOBİLDE DÜZGÜN SARILSIN */
-  #bilgi-paneli {
-    width: 100%;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
+    .etiket{
+        font-size: 11px;
+    }
 
-  .kutu {
-    min-width: 40%;
-    max-width: 45%;
-    padding: 8px 10px;
-  }
-
-  /* LABİRENT DIŞ KABI */
-  #oyun-kutusu {
-    width: 100%;
-    max-width: 95vw;     /* EKRANA SIĞAR */
-    aspect-ratio: 1 / 1; /* KARE KORUNUR */
-    margin: 10px auto;
-  }
-
+    #sure-gostergesi,
+    #ceza-gostergesi,
+    #toplam-puan-gostergesi,
+    #level-gostergesi{
+        font-size: 20px;
+    }
 }
