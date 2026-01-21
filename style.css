@@ -2,11 +2,17 @@
    GENEL AYARLAR
    ========================================================= */
 
-/* Varsayılan hücre boyutu (JS mobilde dinamik ayarlayacak) */
+/* Sayfa sağ-sol taşmasını kesin kapat */
+html, body {
+    width: 100%;
+    overflow-x: hidden;
+}
+
+/* Hücre boyutu gibi değerleri buradan yönetiyoruz */
 :root{
-    --cell-size: 18px;   /* Desktop default */
-    --cols: 31;
-    --rows: 31;
+    --board-border: 5px;     /* #oyun-kutusu border kalınlığı */
+    --page-padding: 12px;    /* sayfa iç boşluk */
+    --cell-size: 18px;       /* PC varsayılan hücre boyutu */
 }
 
 body {
@@ -15,21 +21,16 @@ body {
     justify-content: center;
     align-items: center;
 
-    /* Mobil tarayıcı adres çubuğu vb. yüzünden "100vh" bazen şaşar */
-    min-height: 100vh;
+    /* 100vh mobilde bazen saçmalıyor, 100svh daha stabil */
     min-height: 100svh;
 
     background-color: #222;
     margin: 0;
+    padding: var(--page-padding);
+    box-sizing: border-box;
+
     font-family: 'Courier New', Courier, monospace;
-
-    /* Sayfa sağa-sola taşmasın */
-    overflow-x: hidden;
-
-    /* iPhone çentik/safe-area için ufak güvenlik */
-    padding-top: env(safe-area-inset-top);
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
+    overflow: hidden;
 }
 
 /* =========================================================
@@ -39,7 +40,9 @@ body {
     margin-bottom: 20px;
     display: flex;
     gap: 15px; /* Kutular arası boşluk */
-    flex-wrap: wrap; /* Mobilde taşarsa alt satıra iner */
+
+    /* Telefonlarda kutular sığmazsa alta geçebilsin */
+    flex-wrap: wrap;
     justify-content: center;
 }
 
@@ -50,9 +53,11 @@ body {
     border-radius: 8px;
     color: #fff;
     font-weight: bold;
+
     display: flex;
     flex-direction: column;
     align-items: center;
+
     box-shadow: 0 4px 10px rgba(0,0,0,0.5);
     min-width: 70px;
 }
@@ -90,14 +95,13 @@ body {
 #oyun-kutusu {
     display: grid;
     background-color: #006400;
-    border: 5px solid #000;
+    border: var(--board-border) solid #000;
     box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
 
-    /* Grid "gerçek boyutu" (JS --cell-size / --cols / --rows ayarlıyor) */
-    width:  calc(var(--cell-size) * var(--cols));
-    height: calc(var(--cell-size) * var(--rows));
+    /* Border dahil hesap */
+    box-sizing: border-box;
 
-    /* Dokunmatik kaydırmada sayfa scroll/zoom yapmasın */
+    /* Mobilde parmak sürtünce sayfa “kaymasın” */
     touch-action: none;
 }
 
@@ -111,7 +115,7 @@ body {
     background-color: #fff;
     border: 1px solid #fff;
 
-    /* Border yüzünden toplam boyut büyüyüp taşmasın */
+    /* Border hücrenin içine dahil olsun (taşma yapmasın) */
     box-sizing: border-box;
 
     position: relative;
@@ -185,13 +189,15 @@ body {
    ========================================================= */
 #mobil-kontrol {
     position: fixed;
-    bottom: 20px;
+    bottom: 16px;
     left: 50%;
     transform: translateX(-50%);
+
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 10px;
+
     z-index: 100; /* Her şeyin üstünde dursun */
 
     /* Yanlışlıkla seçimi engelle */
@@ -207,16 +213,16 @@ body {
 .yon-tusu {
     width: 60px;
     height: 60px;
+
     background-color: rgba(255, 255, 255, 0.1); /* Yarı saydam */
     border: 2px solid rgba(255, 255, 255, 0.3);
     border-radius: 50%; /* Yuvarlak olsun */
+
     color: white;
     font-size: 24px;
     cursor: pointer;
 
-    /* Mobilde tıklama gecikmesi ve double-tap zoomu azaltır */
-    touch-action: manipulation;
-
+    touch-action: manipulation; /* Dokunmatik gecikmesini önler */
     transition: background-color 0.1s;
 }
 
@@ -226,33 +232,53 @@ body {
 }
 
 /* =========================================================
-   MOBİL: Panel + yazılar biraz küçülsün, daha rahat sığsın
+   MOBİL: TELEFONA GÖRE OTOMATİK SIĞDIRMA
+   (Transform SCALE yok! Hücre boyutu küçülüyor.)
    ========================================================= */
-@media (max-width: 600px){
+@media (max-width: 600px) {
+
+    :root{
+        --page-padding: 10px;
+
+        /* Labirent 31x31 ise:
+           Ekrana sığması için hücreyi ekran genişliğine göre küçült.
+           (Border'ları ve padding'i de hesaba katıyoruz.)
+        */
+        --cell-size: min(
+            18px,
+            calc(
+                (100vw - (var(--page-padding) * 2) - (var(--board-border) * 2)) / 31
+            )
+        );
+    }
+
     body{
-        justify-content: flex-start; /* Üstten başlasın */
-        padding-top: 12px;
+        justify-content: flex-start;
+        align-items: center;
+
+        /* Alttaki kontrol butonları labirentin üstüne binmesin */
+        padding-bottom: 140px;
     }
 
     #bilgi-paneli{
         margin-bottom: 12px;
-        gap: 10px;
-        padding: 0 8px;
+        gap: 12px;
     }
 
     .kutu{
-        padding: 8px 10px;
-        min-width: 64px;
+        /* Telefonlarda kutular biraz küçülsün */
+        padding: 10px 12px;
+        min-width: 120px;
     }
 
-    .etiket{
-        font-size: 11px;
+    /* Butonları telefonda biraz daha büyük/rahat yap */
+    .yon-tusu{
+        width: 72px;
+        height: 72px;
+        font-size: 26px;
     }
 
-    #sure-gostergesi,
-    #ceza-gostergesi,
-    #toplam-puan-gostergesi,
-    #level-gostergesi{
-        font-size: 20px;
+    .tus-satir{
+        gap: 22px;
     }
 }
