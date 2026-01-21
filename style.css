@@ -10,6 +10,11 @@ body {
     background-color: #222;
     margin: 0;
     font-family: 'Courier New', Courier, monospace;
+
+    /* 🔴 EKRAN KENAR GÜVENLİĞİ (sağdan soldan kesilme olmasın) */
+    padding: 6px;
+    box-sizing: border-box;
+
     overflow: hidden;
 }
 
@@ -20,6 +25,14 @@ body {
     margin-bottom: 20px;
     display: flex;
     gap: 15px; /* Kutular arası boşluk */
+
+    /* 🔴 MOBİL/GENEL: Panel taşmasın */
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+
+    justify-content: center;
+    flex-wrap: wrap;
 }
 
 .kutu {
@@ -33,7 +46,12 @@ body {
     flex-direction: column;
     align-items: center;
     box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+
     min-width: 70px;
+
+    /* 🔴 Taşma olmasın */
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .etiket {
@@ -71,6 +89,14 @@ body {
     background-color: #006400;
     border: 5px solid #000;
     box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+
+    /* 🔴 TAŞMAYI ENGELLE (sağdan kesilme olmasın) */
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+
+    /* MOBİL: Labirent üstünde parmak kaydırınca sayfa kaymasın */
+    touch-action: none;
 }
 
 /* =========================================================
@@ -197,11 +223,6 @@ body {
     /* Mobilde üstten hizalama */
     body {
         align-items: flex-start;
-    }
-
-    /* MOBİL: Labirent üstünde parmak kaydırınca sayfa kaymasın */
-    #oyun-kutusu {
-        touch-action: none;
     }
 
     #oyun-kutusu {
