@@ -1,4 +1,6 @@
-/* GENEL AYARLAR */
+/* =========================================================
+   GENEL AYARLAR
+   ========================================================= */
 body {
     display: flex;
     flex-direction: column;
@@ -8,10 +10,12 @@ body {
     background-color: #222;
     margin: 0;
     font-family: 'Courier New', Courier, monospace;
-    overflow: hidden; 
+    overflow: hidden;
 }
 
-/* BİLGİ PANELİ */
+/* =========================================================
+   BİLGİ PANELİ
+   ========================================================= */
 #bilgi-paneli {
     margin-bottom: 20px;
     display: flex;
@@ -38,7 +42,10 @@ body {
     margin-bottom: 5px;
 }
 
-#sure-gostergesi, #ceza-gostergesi, #toplam-puan-gostergesi, #level-gostergesi {
+#sure-gostergesi,
+#ceza-gostergesi,
+#toplam-puan-gostergesi,
+#level-gostergesi {
     font-size: 24px;
 }
 
@@ -56,51 +63,61 @@ body {
     100% { transform: translateX(0); }
 }
 
-/* OYUN ALANI */
+/* =========================================================
+   OYUN ALANI
+   ========================================================= */
 #oyun-kutusu {
     display: grid;
-    background-color: #006400; 
+    background-color: #006400;
     border: 5px solid #000;
     box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
 }
 
-/* HÜCRELER */
+/* =========================================================
+   HÜCRELER
+   ========================================================= */
 .hucre {
-    width: 18px; 
+    width: 18px;
     height: 18px;
-    background-color: #fff; 
-    border: 1px solid #fff; 
-    position: relative; 
+    background-color: #fff;
+    border: 1px solid #fff;
+    position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-/* DUVARLAR */
+/* =========================================================
+   DUVARLAR
+   ========================================================= */
 .duvar {
-    background: linear-gradient(135deg, #008000, #003300); 
-    box-shadow: inset 2px 2px 5px rgba(255,255,255,0.2), 
+    background: linear-gradient(135deg, #008000, #003300);
+    box-shadow: inset 2px 2px 5px rgba(255,255,255,0.2),
                 inset -2px -2px 5px rgba(0,0,0,0.5);
-    border: none; 
+    border: none;
 }
 
-/* İZ (PEMBE NOKTA) */
+/* =========================================================
+   İZ (PEMBE NOKTA)
+   ========================================================= */
 .iz {
     width: 6px;
     height: 6px;
-    background-color: #ff1493; 
+    background-color: #ff1493;
     border-radius: 50%;
-    box-shadow: 0 0 4px #ff1493; 
+    box-shadow: 0 0 4px #ff1493;
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    z-index: 1; 
+    z-index: 1;
 }
 
-/* BAŞLANGIÇ & BİTİŞ */
+/* =========================================================
+   BAŞLANGIÇ & BİTİŞ
+   ========================================================= */
 .baslangic {
-    background-color: #E30A17 !important; 
+    background-color: #E30A17 !important;
     border-color: #E30A17 !important;
 }
 
@@ -116,19 +133,23 @@ body {
     to { opacity: 1; }
 }
 
-/* OYUNCU (PEMBE ÜÇGEN) */
+/* =========================================================
+   OYUNCU (PEMBE ÜÇGEN)
+   ========================================================= */
 .ucgen-karakter {
-    width: 14px; 
+    width: 14px;
     height: 14px;
-    background-color: #ff1493; 
+    background-color: #ff1493;
     clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
     transition: transform 0.1s linear;
-    position: relative; 
-    z-index: 10; 
+    position: relative;
+    z-index: 10;
     box-shadow: 0 0 5px #000;
 }
 
-/* --- MOBİL KONTROLLER --- */
+/* =========================================================
+   MOBİL KONTROLLER
+   ========================================================= */
 #mobil-kontrol {
     position: fixed;
     bottom: 20px;
@@ -139,10 +160,10 @@ body {
     align-items: center;
     gap: 10px;
     z-index: 100; /* Her şeyin üstünde dursun */
-    
+
     /* Yanlışlıkla seçimi engelle */
-    user-select: none; 
-    -webkit-user-select: none; 
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 .tus-satir {
@@ -168,20 +189,31 @@ body {
     transform: scale(0.95);
 }
 
+/* =========================================================
+   MOBİL: EKRANA SIĞDIRMA (SCALE)
+   ========================================================= */
 @media (max-width: 600px) {
-  body { align-items: flex-start; }
 
-  #oyun-kutusu {
-    transform: scale(0.84);
-    transform-origin: top left;
-    margin-left: 0;
-    margin-right: 0;
+    /* Mobilde üstten hizalama */
+    body {
+        align-items: flex-start;
+    }
+
     /* MOBİL: Labirent üstünde parmak kaydırınca sayfa kaymasın */
-#oyun-kutusu { touch-action: none; }
+    #oyun-kutusu {
+        touch-action: none;
+    }
 
+    #oyun-kutusu {
+        transform: scale(0.84);
+        transform-origin: top left;
+        margin-left: 0;
+        margin-right: 0;
 
-    /* KUTUNUN GERÇEK BOYUTU: scale ile AYNI olmalı */
-    width:  calc(558px * 0.84);
-    height: calc(558px * 0.84);
-  }
+        /* KUTUNUN GERÇEK BOYUTU: scale ile AYNI olmalı
+           (Bu değerler, senin labirentin toplam piksel boyutuna göre sabit.)
+        */
+        width:  calc(558px * 0.84);
+        height: calc(558px * 0.84);
+    }
 }
