@@ -2,10 +2,7 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-
-    <!-- MOBİLİN “MOBİL” GİBİ DAVRANMASI İÇİN EN KRİTİK SATIR -->
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-
     <title>Labirent Oyunu - Sonsuz Mod</title>
     <link rel="icon" type="image/png" href="maze.png">
     <link rel="stylesheet" href="style.css">
@@ -13,6 +10,7 @@
 <body>
 
     <div id="bilgi-paneli">
+
         <div class="kutu" style="border-color: #ffd700;">
             <span class="etiket">LEVEL</span>
             <span id="level-gostergesi" style="color: #ffd700;">1</span>
@@ -32,20 +30,10 @@
             <span class="etiket">TOPLAM PUAN</span>
             <span id="toplam-puan-gostergesi" style="color: #00bfff;">0</span>
         </div>
+
     </div>
 
     <div id="oyun-kutusu"></div>
-
-    <div id="mobil-kontrol">
-        <div class="tus-satir">
-            <button id="btn-yukari" class="yon-tusu">▲</button>
-        </div>
-        <div class="tus-satir">
-            <button id="btn-sol" class="yon-tusu">◄</button>
-            <button id="btn-asagi" class="yon-tusu">▼</button>
-            <button id="btn-sag" class="yon-tusu">►</button>
-        </div>
-    </div>
 
     <script src="script.js"></script>
 </body>
