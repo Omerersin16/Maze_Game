@@ -2,13 +2,9 @@
 // LABİRENT OYUNU - SONSUSZ MOD (script.js)
 // =========================================================
 
-// Oyun ayarları
-const BOYUT = 31; // 31x31 labirent
-
-// Desktop'ta hedeflediğimiz "ideal" hücre boyu (mobilde dinamik ayarlanacak)
+const BOYUT = 31;
 const DESKTOP_CELL_PX = 18;
 
-// Oyun durumu js dosyası böyle
 let oyunBittiMi = false;
 let kalanSure = 45;
 let zamanlayiciInterval = null;
@@ -16,73 +12,57 @@ let cezaSayisi = 0;
 let toplamPuan = 0;
 let level = 1;
 
-// Oyuncu konumu
 let oyuncuX = 0;
 let oyuncuY = 0;
-let oyuncuYon = "sag"; // "yukari", "asagi", "sol", "sag"
+let oyuncuYon = "sag";
 
-// DOM elemanları
 const oyunKutusu = document.getElementById("oyun-kutusu");
 const sureGostergesi = document.getElementById("sure-gostergesi");
 const cezaGostergesi = document.getElementById("ceza-gostergesi");
 const toplamPuanGostergesi = document.getElementById("toplam-puan-gostergesi");
 const levelGostergesi = document.getElementById("level-gostergesi");
 const bilgiPaneli = document.getElementById("bilgi-paneli");
-const mobilKontrol = document.getElementById("mobil-kontrol");
 
 // ---------------------------------------------------------
-// 1) RESPONSIVE: Mobilde "telefon olduğunu anlamıyor" problemi
+// 1) Responsive boyut
 // ---------------------------------------------------------
 function responsiveBoyutAyarla() {
-    // CSS değişkenleri: --cell-size, --cols, --rows
     document.documentElement.style.setProperty("--cols", BOYUT);
     document.documentElement.style.setProperty("--rows", BOYUT);
 
-    // Panel + kontrol yüksekliğini ölç (mobilde "ekrana sığma" için)
     const panelH = bilgiPaneli ? bilgiPaneli.getBoundingClientRect().height : 0;
-    const kontrolH = mobilKontrol ? mobilKontrol.getBoundingClientRect().height : 0;
 
-    // Kenarlardan nefes payı
     const padding = 16;
-
-    // Kullanılabilir alan (kareyi bozmayacağız -> min alınır)
     const availW = window.innerWidth - padding;
-    const availH = window.innerHeight - panelH - kontrolH - padding - 20; // 20: aralara pay
+    const availH = window.innerHeight - panelH - padding - 20;
 
-    // Desktop mu mobil mi?
     const mobilMi = window.matchMedia("(max-width: 600px)").matches;
 
-    // Desktop'ta 18px, mobilde ekrana göre hesapla
     let cellPx = DESKTOP_CELL_PX;
 
     if (mobilMi) {
         const maxKareBoy = Math.max(100, Math.min(availW, availH));
         cellPx = Math.floor(maxKareBoy / BOYUT);
-
-        // Çok küçülmesin / çok büyümesin
         cellPx = Math.max(10, Math.min(22, cellPx));
     }
 
-    // CSS'ye yaz
     document.documentElement.style.setProperty("--cell-size", `${cellPx}px`);
 }
 
 // ---------------------------------------------------------
-// 2) Labirent üretme (Recursive backtracking)
+// 2) Labirent üretme
 // ---------------------------------------------------------
 function labirentOlustur() {
-    // 1 = duvar, 0 = yol
     const maze = Array.from({ length: BOYUT }, () => Array(BOYUT).fill(1));
 
     function carve(x, y) {
         const directions = [
-            [0, -2], // yukarı
-            [0,  2], // aşağı
-            [-2, 0], // sol
-            [2,  0]  // sağ
+            [0, -2],
+            [0,  2],
+            [-2, 0],
+            [2,  0]
         ];
 
-        // yönleri karıştır
         for (let i = directions.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [directions[i], directions[j]] = [directions[j], directions[i]];
@@ -111,7 +91,7 @@ function labirentOlustur() {
 }
 
 // ---------------------------------------------------------
-// 3) Ekrana çizdirme
+// 3) Çizdirme
 // ---------------------------------------------------------
 let currentMaze = null;
 
@@ -119,10 +99,8 @@ function haritaUret() {
     responsiveBoyutAyarla();
 
     currentMaze = labirentOlustur();
-
     oyunKutusu.innerHTML = "";
 
-    // ✅ KRİTİK DÜZELTME: 1fr YERİNE gerçek hücre boyu
     oyunKutusu.style.gridTemplateColumns = `repeat(${BOYUT}, var(--cell-size))`;
     oyunKutusu.style.gridTemplateRows = `repeat(${BOYUT}, var(--cell-size))`;
 
@@ -131,9 +109,7 @@ function haritaUret() {
             const hucre = document.createElement("div");
             hucre.classList.add("hucre");
 
-            if (currentMaze[y][x] === 1) {
-                hucre.classList.add("duvar");
-            }
+            if (currentMaze[y][x] === 1) hucre.classList.add("duvar");
 
             if (x === 1 && y === 1) hucre.classList.add("baslangic");
             if (x === BOYUT - 2 && y === BOYUT - 2) hucre.classList.add("bitis");
@@ -149,7 +125,7 @@ function haritaUret() {
 }
 
 // ---------------------------------------------------------
-// 4) Oyuncuyu çizdirme
+// 4) Oyuncu çiz
 // ---------------------------------------------------------
 function oyuncuyuCiz() {
     const eski = document.querySelector(".ucgen-karakter");
@@ -166,13 +142,13 @@ function oyuncuyuCiz() {
     if (oyuncuYon === "sag") rotateDeg = 90;
     if (oyuncuYon === "asagi") rotateDeg = 180;
     if (oyuncuYon === "sol") rotateDeg = 270;
-    oyuncu.style.transform = `rotate(${rotateDeg}deg)`;
 
+    oyuncu.style.transform = `rotate(${rotateDeg}deg)`;
     hucre.appendChild(oyuncu);
 }
 
 // ---------------------------------------------------------
-// 5) Hareket
+// 5) Hareket (DONMA FIX burada)
 // ---------------------------------------------------------
 function oyuncuyuHareketEttir(dx, dy, yon, izBirak = true) {
     if (oyunBittiMi) return;
@@ -180,12 +156,21 @@ function oyuncuyuHareketEttir(dx, dy, yon, izBirak = true) {
     const yeniX = oyuncuX + dx;
     const yeniY = oyuncuY + dy;
 
+    // ✅ DONMA FIX 1: Önce sınır kontrolü (out-of-bounds olursa patlamasın)
+    if (yeniX < 0 || yeniX >= BOYUT || yeniY < 0 || yeniY >= BOYUT) {
+        cezaSayisi++;
+        cezaGostergesi.textContent = cezaSayisi;
+        return;
+    }
+
+    // duvar mı?
     if (currentMaze[yeniY][yeniX] === 1) {
         cezaSayisi++;
         cezaGostergesi.textContent = cezaSayisi;
         return;
     }
 
+    // iz bırak
     if (izBirak) {
         const eskiIndex = oyuncuY * BOYUT + oyuncuX;
         const eskiHucre = oyunKutusu.children[eskiIndex];
@@ -200,6 +185,7 @@ function oyuncuyuHareketEttir(dx, dy, yon, izBirak = true) {
 
     oyuncuyuCiz();
 
+    // bitiş
     if (oyuncuX === BOYUT - 2 && oyuncuY === BOYUT - 2) {
         level++;
         levelGostergesi.textContent = level;
@@ -227,9 +213,7 @@ function zamanlayiciBaslat() {
         kalanSure--;
         sureGostergesi.textContent = kalanSure;
 
-        if (kalanSure <= 10) {
-            sureGostergesi.classList.add("kritik");
-        }
+        if (kalanSure <= 10) sureGostergesi.classList.add("kritik");
 
         if (kalanSure <= 0) {
             cezaSayisi++;
@@ -245,7 +229,7 @@ function yeniLevelBaslat() {
 }
 
 // ---------------------------------------------------------
-// 7) Klavye kontrolleri
+// 7) Klavye
 // ---------------------------------------------------------
 document.addEventListener("keydown", (e) => {
     if (oyunBittiMi) return;
@@ -257,29 +241,7 @@ document.addEventListener("keydown", (e) => {
 });
 
 // ---------------------------------------------------------
-// 8) Mobil buton kontrolleri
-// ---------------------------------------------------------
-function butonBagla(btnId, dx, dy, yon) {
-    const btn = document.getElementById(btnId);
-    if (!btn) return;
-
-    btn.addEventListener("touchstart", (e) => {
-        e.preventDefault();
-        oyuncuyuHareketEttir(dx, dy, yon);
-    }, { passive: false });
-
-    btn.addEventListener("click", () => {
-        oyuncuyuHareketEttir(dx, dy, yon);
-    });
-}
-
-butonBagla("btn-yukari", 0, -1, "yukari");
-butonBagla("btn-asagi", 0, 1, "asagi");
-butonBagla("btn-sol", -1, 0, "sol");
-butonBagla("btn-sag", 1, 0, "sag");
-
-// ---------------------------------------------------------
-// 9) MOBİL KAYDIRMA (Swipe) Kontrolü
+// 8) Swipe (kısa = 1, basılı = sürekli) + DONMA FIX 2
 // ---------------------------------------------------------
 let swipeAktif = false;
 let swipeBaslangicX = 0;
@@ -288,17 +250,15 @@ let swipeYonu = null;
 let holdMode = false;
 let holdTimer = null;
 let moveInterval = null;
+let aktifPointerId = null;
 
 const SWIPE_ESIK = 12;
 const HOLD_SURE = 250;
 const MOVE_HIZ = 120;
 
 function yonBul(dx, dy) {
-    if (Math.abs(dx) > Math.abs(dy)) {
-        return dx > 0 ? "sag" : "sol";
-    } else {
-        return dy > 0 ? "asagi" : "yukari";
-    }
+    if (Math.abs(dx) > Math.abs(dy)) return dx > 0 ? "sag" : "sol";
+    return dy > 0 ? "asagi" : "yukari";
 }
 
 function yonuHareketeCevir(yon) {
@@ -330,15 +290,22 @@ function swipeSifirla() {
     swipeAktif = false;
     swipeYonu = null;
     holdMode = false;
+    aktifPointerId = null;
     clearTimeout(holdTimer);
     holdTimer = null;
     intervalDurdur();
 }
 
 oyunKutusu.addEventListener("pointerdown", (e) => {
-    if (e.pointerType === "mouse" && e.button !== 0) return;
+    // multi-touch karışmasın: sadece 1 parmak takip
+    if (aktifPointerId !== null) return;
 
     swipeAktif = true;
+    aktifPointerId = e.pointerId;
+
+    // ✅ DONMA FIX 2: pointer capture (parmak dışarı çıksa bile up yakalanır)
+    oyunKutusu.setPointerCapture(e.pointerId);
+
     swipeBaslangicX = e.clientX;
     swipeBaslangicY = e.clientY;
     swipeYonu = null;
@@ -355,29 +322,33 @@ oyunKutusu.addEventListener("pointerdown", (e) => {
 
 oyunKutusu.addEventListener("pointermove", (e) => {
     if (!swipeAktif) return;
+    if (aktifPointerId !== e.pointerId) return;
 
     const dx = e.clientX - swipeBaslangicX;
     const dy = e.clientY - swipeBaslangicY;
 
     if (!swipeYonu && (Math.abs(dx) < SWIPE_ESIK && Math.abs(dy) < SWIPE_ESIK)) return;
 
-    const yeniYon = yonBul(dx, dy);
-    swipeYonu = yeniYon;
+    swipeYonu = yonBul(dx, dy);
 
-    if (holdMode) {
-        intervalBaslat();
-    }
+    if (holdMode) intervalBaslat();
 
     e.preventDefault();
 }, { passive: false });
 
 function pointerBitir(e) {
     if (!swipeAktif) return;
+    if (aktifPointerId !== e.pointerId && e.type !== "pointerup") return;
 
     if (!holdMode && swipeYonu) {
         const [dx, dy, yon] = yonuHareketeCevir(swipeYonu);
         oyuncuyuHareketEttir(dx, dy, yon);
     }
+
+    // capture bırak
+    try {
+        if (aktifPointerId !== null) oyunKutusu.releasePointerCapture(aktifPointerId);
+    } catch (_) {}
 
     swipeSifirla();
     e.preventDefault();
@@ -386,16 +357,20 @@ function pointerBitir(e) {
 oyunKutusu.addEventListener("pointerup", pointerBitir, { passive: false });
 oyunKutusu.addEventListener("pointercancel", pointerBitir, { passive: false });
 
+// ✅ ekstra güvenlik: parmak ekrandan kalktı ama element yakalayamadıysa
+window.addEventListener("pointerup", (e) => {
+    if (aktifPointerId === e.pointerId) pointerBitir(e);
+}, { passive: false });
+
 // ---------------------------------------------------------
-// 10) Resize: Ekran değişince labirent boyutu güncellensin
+// 9) Resize
 // ---------------------------------------------------------
 window.addEventListener("resize", () => {
     responsiveBoyutAyarla();
-    // İstersen burada haritaUret() de çağırabiliriz ama her resize'da reset olur
 });
 
 // ---------------------------------------------------------
-// 11) Başlat
+// 10) Başlat
 // ---------------------------------------------------------
 haritaUret();
 zamanlayiciBaslat();
