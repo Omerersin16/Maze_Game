@@ -24,7 +24,6 @@ body {
     margin: 0;
     font-family: 'Courier New', Courier, monospace;
 
-    /* Butonlar kalktı => alt padding'i normale çektik */
     padding: 12px 10px 16px;
     box-sizing: border-box;
 }
@@ -67,7 +66,6 @@ body {
 }
 
 #sure-gostergesi,
-#ceza-gostergesi,
 #toplam-puan-gostergesi,
 #level-gostergesi {
     font-size: 24px;
@@ -154,8 +152,8 @@ body {
    BAŞLANGIÇ & BİTİŞ
    ========================================================= */
 .baslangic {
-    background-color: #E30A17 !important;
-    border-color: #E30A17 !important;
+    background-color: #d9b906 !important;
+    border-color: #190668 !important;
 }
 
 .bitis {
@@ -184,7 +182,9 @@ body {
     box-shadow: 0 0 5px #000;
 }
 
-/* Mobilde panel çok taşarsa biraz küçült */
+/* =========================================================
+   MOBİL İNCE AYAR
+   ========================================================= */
 @media (max-width: 600px) {
     .kutu {
         min-width: 110px;
