@@ -2,29 +2,43 @@
 // LABİRENT OYUNU - SONSUSZ MOD (script.js)
 // =========================================================
 
-const BOYUT = 31;
+// Oyun ayarları
+const BOYUT = 31; // 31x31 labirent
 const DESKTOP_CELL_PX = 18;
 
+// ✅ Süre 60 saniye
+const LEVEL_SURE = 60;
+
+// ✅ Puan çarpanı (istersen sonra 5/10/20 yaparız)
+const PUAN_CARPANI = 10;
+
+// Oyun durumu
 let oyunBittiMi = false;
-let kalanSure = 45;
+let kalanSure = LEVEL_SURE;
 let zamanlayiciInterval = null;
-let cezaSayisi = 0;
 let toplamPuan = 0;
 let level = 1;
 
+// Oyuncu konumu
 let oyuncuX = 0;
 let oyuncuY = 0;
-let oyuncuYon = "sag";
+let oyuncuYon = "sag"; // "yukari", "asagi", "sol", "sag"
 
+// ✅ Giriş/Çıkış (duvar üstünde) + iç kapılar
+let baslangic = { x: 0, y: 1 };
+let bitis = { x: BOYUT - 1, y: BOYUT - 2 };
+let girisIci = { x: 1, y: 1 };
+let cikisIci = { x: BOYUT - 2, y: BOYUT - 2 };
+
+// DOM elemanları
 const oyunKutusu = document.getElementById("oyun-kutusu");
 const sureGostergesi = document.getElementById("sure-gostergesi");
-const cezaGostergesi = document.getElementById("ceza-gostergesi");
 const toplamPuanGostergesi = document.getElementById("toplam-puan-gostergesi");
 const levelGostergesi = document.getElementById("level-gostergesi");
 const bilgiPaneli = document.getElementById("bilgi-paneli");
 
 // ---------------------------------------------------------
-// 1) Responsive boyut
+// 1) RESPONSIVE: hücre boyunu ekrana göre ayarla (scale yok!)
 // ---------------------------------------------------------
 function responsiveBoyutAyarla() {
     document.documentElement.style.setProperty("--cols", BOYUT);
@@ -50,9 +64,58 @@ function responsiveBoyutAyarla() {
 }
 
 // ---------------------------------------------------------
-// 2) Labirent üretme
+// 2) DUVAR ÜSTÜNDE RASTGELE BAŞLANGIÇ / KARŞI DUVARDA BİTİŞ
+// ---------------------------------------------------------
+function duvarKapilariSec() {
+    // 0=üst,1=sağ,2=alt,3=sol
+    const kenar = Math.floor(Math.random() * 4);
+
+    const rand = () => Math.floor(Math.random() * (BOYUT - 2)) + 1;
+
+    let bx, by, ex, ey;
+    let gix, giy, cix, ciy;
+
+    if (kenar === 0) {
+        // ÜST duvar (y=0) -> ALT duvar (y=BOYUT-1)
+        bx = rand(); by = 0;
+        gix = bx;   giy = 1;
+
+        ex = rand(); ey = BOYUT - 1;
+        cix = ex;    ciy = BOYUT - 2;
+    } else if (kenar === 2) {
+        // ALT -> ÜST
+        bx = rand(); by = BOYUT - 1;
+        gix = bx;   giy = BOYUT - 2;
+
+        ex = rand(); ey = 0;
+        cix = ex;    ciy = 1;
+    } else if (kenar === 3) {
+        // SOL (x=0) -> SAĞ (x=BOYUT-1)
+        bx = 0;      by = rand();
+        gix = 1;     giy = by;
+
+        ex = BOYUT - 1; ey = rand();
+        cix = BOYUT - 2; ciy = ey;
+    } else {
+        // SAĞ -> SOL
+        bx = BOYUT - 1; by = rand();
+        gix = BOYUT - 2; giy = by;
+
+        ex = 0;          ey = rand();
+        cix = 1;         ciy = ey;
+    }
+
+    baslangic = { x: bx, y: by };
+    bitis = { x: ex, y: ey };
+    girisIci = { x: gix, y: giy };
+    cikisIci = { x: cix, y: ciy };
+}
+
+// ---------------------------------------------------------
+// 3) Labirent üretme (Recursive backtracking)
 // ---------------------------------------------------------
 function labirentOlustur() {
+    // 1 = duvar, 0 = yol
     const maze = Array.from({ length: BOYUT }, () => Array(BOYUT).fill(1));
 
     function carve(x, y) {
@@ -82,16 +145,25 @@ function labirentOlustur() {
         }
     }
 
+    // üret
     maze[1][1] = 0;
     carve(1, 1);
 
-    maze[BOYUT - 2][BOYUT - 2] = 0;
+    // ✅ kapıları seç
+    duvarKapilariSec();
+
+    // ✅ kapıları aç (duvar + iç hücre)
+    maze[baslangic.y][baslangic.x] = 0;
+    maze[girisIci.y][girisIci.x] = 0;
+
+    maze[bitis.y][bitis.x] = 0;
+    maze[cikisIci.y][cikisIci.x] = 0;
 
     return maze;
 }
 
 // ---------------------------------------------------------
-// 3) Çizdirme
+// 4) Ekrana çizdirme
 // ---------------------------------------------------------
 let currentMaze = null;
 
@@ -99,8 +171,8 @@ function haritaUret() {
     responsiveBoyutAyarla();
 
     currentMaze = labirentOlustur();
-    oyunKutusu.innerHTML = "";
 
+    oyunKutusu.innerHTML = "";
     oyunKutusu.style.gridTemplateColumns = `repeat(${BOYUT}, var(--cell-size))`;
     oyunKutusu.style.gridTemplateRows = `repeat(${BOYUT}, var(--cell-size))`;
 
@@ -109,23 +181,28 @@ function haritaUret() {
             const hucre = document.createElement("div");
             hucre.classList.add("hucre");
 
-            if (currentMaze[y][x] === 1) hucre.classList.add("duvar");
+            if (currentMaze[y][x] === 1) {
+                hucre.classList.add("duvar");
+            }
 
-            if (x === 1 && y === 1) hucre.classList.add("baslangic");
-            if (x === BOYUT - 2 && y === BOYUT - 2) hucre.classList.add("bitis");
+            // kapılar duvar üstünde
+            if (x === baslangic.x && y === baslangic.y) hucre.classList.add("baslangic");
+            if (x === bitis.x && y === bitis.y) hucre.classList.add("bitis");
 
             oyunKutusu.appendChild(hucre);
         }
     }
 
-    oyuncuX = 1;
-    oyuncuY = 1;
+    // ✅ oyuncu artık DOĞRUDAN başlangıç kapısında başlasın
+oyuncuX = baslangic.x;
+oyuncuY = baslangic.y;
+
     oyuncuYon = "sag";
     oyuncuyuCiz();
 }
 
 // ---------------------------------------------------------
-// 4) Oyuncu çiz
+// 5) Oyuncuyu çizdirme
 // ---------------------------------------------------------
 function oyuncuyuCiz() {
     const eski = document.querySelector(".ucgen-karakter");
@@ -148,7 +225,7 @@ function oyuncuyuCiz() {
 }
 
 // ---------------------------------------------------------
-// 5) Hareket (DONMA FIX burada)
+// 6) Hareket (✅ ceza yok: duvara çarparsa sadece durur)
 // ---------------------------------------------------------
 function oyuncuyuHareketEttir(dx, dy, yon, izBirak = true) {
     if (oyunBittiMi) return;
@@ -156,17 +233,13 @@ function oyuncuyuHareketEttir(dx, dy, yon, izBirak = true) {
     const yeniX = oyuncuX + dx;
     const yeniY = oyuncuY + dy;
 
-    // ✅ DONMA FIX 1: Önce sınır kontrolü (out-of-bounds olursa patlamasın)
+    // sınır dışı -> dur
     if (yeniX < 0 || yeniX >= BOYUT || yeniY < 0 || yeniY >= BOYUT) {
-        cezaSayisi++;
-        cezaGostergesi.textContent = cezaSayisi;
         return;
     }
 
-    // duvar mı?
+    // duvar -> dur
     if (currentMaze[yeniY][yeniX] === 1) {
-        cezaSayisi++;
-        cezaGostergesi.textContent = cezaSayisi;
         return;
     }
 
@@ -185,12 +258,13 @@ function oyuncuyuHareketEttir(dx, dy, yon, izBirak = true) {
 
     oyuncuyuCiz();
 
-    // bitiş
-    if (oyuncuX === BOYUT - 2 && oyuncuY === BOYUT - 2) {
+    // ✅ çıkış (duvar üstündeki bitiş hücresi)
+    if (oyuncuX === bitis.x && oyuncuY === bitis.y) {
         level++;
         levelGostergesi.textContent = level;
 
-        toplamPuan += Math.max(0, kalanSure);
+        // ✅ süreye göre bonus puan
+        toplamPuan += Math.max(0, kalanSure) * PUAN_CARPANI;
         toplamPuanGostergesi.textContent = toplamPuan;
 
         yeniLevelBaslat();
@@ -198,12 +272,12 @@ function oyuncuyuHareketEttir(dx, dy, yon, izBirak = true) {
 }
 
 // ---------------------------------------------------------
-// 6) Zaman
+// 7) Zaman (60 saniye) - ✅ ceza yok
 // ---------------------------------------------------------
 function zamanlayiciBaslat() {
     clearInterval(zamanlayiciInterval);
 
-    kalanSure = 45;
+    kalanSure = LEVEL_SURE;
     sureGostergesi.textContent = kalanSure;
     sureGostergesi.classList.remove("kritik");
 
@@ -213,11 +287,12 @@ function zamanlayiciBaslat() {
         kalanSure--;
         sureGostergesi.textContent = kalanSure;
 
-        if (kalanSure <= 10) sureGostergesi.classList.add("kritik");
+        if (kalanSure <= 10) {
+            sureGostergesi.classList.add("kritik");
+        }
 
         if (kalanSure <= 0) {
-            cezaSayisi++;
-            cezaGostergesi.textContent = cezaSayisi;
+            // süre bitti -> aynı level yeniden
             yeniLevelBaslat();
         }
     }, 1000);
@@ -229,7 +304,7 @@ function yeniLevelBaslat() {
 }
 
 // ---------------------------------------------------------
-// 7) Klavye
+// 8) Klavye kontrolleri
 // ---------------------------------------------------------
 document.addEventListener("keydown", (e) => {
     if (oyunBittiMi) return;
@@ -241,7 +316,9 @@ document.addEventListener("keydown", (e) => {
 });
 
 // ---------------------------------------------------------
-// 8) Swipe (kısa = 1, basılı = sürekli) + DONMA FIX 2
+// 9) MOBİL KAYDIRMA (Swipe) Kontrolü
+// - kısa swipe -> 1 adım
+// - basılı tut -> sürekli gider (duvara gelince durur)
 // ---------------------------------------------------------
 let swipeAktif = false;
 let swipeBaslangicX = 0;
@@ -257,8 +334,11 @@ const HOLD_SURE = 250;
 const MOVE_HIZ = 120;
 
 function yonBul(dx, dy) {
-    if (Math.abs(dx) > Math.abs(dy)) return dx > 0 ? "sag" : "sol";
-    return dy > 0 ? "asagi" : "yukari";
+    if (Math.abs(dx) > Math.abs(dy)) {
+        return dx > 0 ? "sag" : "sol";
+    } else {
+        return dy > 0 ? "asagi" : "yukari";
+    }
 }
 
 function yonuHareketeCevir(yon) {
@@ -297,13 +377,10 @@ function swipeSifirla() {
 }
 
 oyunKutusu.addEventListener("pointerdown", (e) => {
-    // multi-touch karışmasın: sadece 1 parmak takip
     if (aktifPointerId !== null) return;
 
     swipeAktif = true;
     aktifPointerId = e.pointerId;
-
-    // ✅ DONMA FIX 2: pointer capture (parmak dışarı çıksa bile up yakalanır)
     oyunKutusu.setPointerCapture(e.pointerId);
 
     swipeBaslangicX = e.clientX;
@@ -338,14 +415,12 @@ oyunKutusu.addEventListener("pointermove", (e) => {
 
 function pointerBitir(e) {
     if (!swipeAktif) return;
-    if (aktifPointerId !== e.pointerId && e.type !== "pointerup") return;
 
     if (!holdMode && swipeYonu) {
         const [dx, dy, yon] = yonuHareketeCevir(swipeYonu);
         oyuncuyuHareketEttir(dx, dy, yon);
     }
 
-    // capture bırak
     try {
         if (aktifPointerId !== null) oyunKutusu.releasePointerCapture(aktifPointerId);
     } catch (_) {}
@@ -357,20 +432,19 @@ function pointerBitir(e) {
 oyunKutusu.addEventListener("pointerup", pointerBitir, { passive: false });
 oyunKutusu.addEventListener("pointercancel", pointerBitir, { passive: false });
 
-// ✅ ekstra güvenlik: parmak ekrandan kalktı ama element yakalayamadıysa
 window.addEventListener("pointerup", (e) => {
     if (aktifPointerId === e.pointerId) pointerBitir(e);
 }, { passive: false });
 
 // ---------------------------------------------------------
-// 9) Resize
+// 10) Resize
 // ---------------------------------------------------------
 window.addEventListener("resize", () => {
     responsiveBoyutAyarla();
 });
 
 // ---------------------------------------------------------
-// 10) Başlat
+// 11) Başlat
 // ---------------------------------------------------------
 haritaUret();
 zamanlayiciBaslat();
